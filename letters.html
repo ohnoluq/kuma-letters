@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #faf6f0;
+      --parchment: #f2ebe0;
+      --ink: #2c2416;
+      --ink-light: #6b5d4a;
+      --gold: #b8924a;
+      --gold-light: #d4aa6a;
+      --red-wax: #8b2e2e;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      font-family: 'Lato', sans-serif;
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ── PAPER TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .envelope-wrap {
+      animation: floatIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .envelope {
+      width: min(420px, 92vw);
+      background: var(--parchment);
+      border-radius: 2px;
+      box-shadow:
+        0 2px 4px rgba(44,36,22,0.08),
+        0 12px 40px rgba(44,36,22,0.14),
+        0 40px 80px rgba(44,36,22,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* envelope flap */
+    .envelope::before {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-top: 42%;
+      background: linear-gradient(135deg, #e8dfd0 50%, transparent 50%),
+                  linear-gradient(225deg, #e8dfd0 50%, transparent 50%);
+      background-size: 50% 100%;
+      background-repeat: no-repeat;
+      background-position: left, right;
+      border-bottom: 1px solid rgba(44,36,22,0.1);
+    }
+
+    /* wax seal */
+    .seal {
+      position: absolute;
+      top: calc(42% - 28px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      height: 56px;
+      background: var(--red-wax);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      color: rgba(255,255,255,0.85);
+      box-shadow: 0 2px 8px rgba(139,46,46,0.4), inset 0 1px 2px rgba(255,255,255,0.15);
+      z-index: 2;
+      cursor: default;
+      user-select: none;
+    }
+
+    .envelope-body {
+      padding: 2.5rem 2.5rem 2.5rem;
+    }
+
+    .envelope-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+
+    .envelope-sub {
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0;
+      border: 1px solid rgba(44,36,22,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    .input-row:focus-within {
+      box-shadow: 0 0 0 2px var(--gold-light);
+    }
+
+    #pwd-input {
+      flex: 1;
+      background: rgba(255,255,255,0.6);
+      border: none;
+      padding: 0.85rem 1rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+      outline: none;
+    }
+
+    #pwd-input::placeholder { color: var(--ink-light); opacity: 0.6; }
+
+    #open-btn {
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      padding: 0 1.4rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #open-btn:hover { background: var(--gold); }
+
+    #error-msg {
+      margin-top: 0.9rem;
+      text-align: center;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      color: var(--red-wax);
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    #error-msg.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hint {
+      margin-top: 2rem;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--ink-light);
+      opacity: 0.7;
+    }
+
+    /* ── LETTER SCREEN ── */
+    #letter-screen {
+      display: none;
+      animation: pageReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes pageReveal {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .letter-paper {
+      width: min(640px, 92vw);
+      background: #fffdf8;
+      padding: 4rem 4.5rem;
+      box-shadow:
+        0 2px 4px rgba(44,36,22,0.06),
+        0 16px 48px rgba(44,36,22,0.12),
+        0 48px 96px rgba(44,36,22,0.07);
+      position: relative;
+    }
+
+    /* ruled lines behind text */
+    .letter-paper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 31px,
+        rgba(44,36,22,0.055) 31px,
+        rgba(44,36,22,0.055) 32px
+      );
+      background-position: 0 5rem;
+      pointer-events: none;
+    }
+
+    /* left margin line */
+    .letter-paper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 3rem;
+      width: 1px;
+      background: rgba(184,146,74,0.25);
+    }
+
+    .letter-date {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--ink-light);
+      text-align: right;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    #letter-greeting {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 1.6rem;
+      line-height: 1.2;
+      position: relative;
+    }
+
+    #letter-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 300;
+      line-height: 2rem;
+      color: var(--ink);
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .letter-sign {
+      margin-top: 2.5rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--ink);
+      position: relative;
+    }
+
+    #back-btn {
+      display: block;
+      margin: 1.8rem auto 0;
+      background: transparent;
+      border: 1px solid rgba(44,36,22,0.25);
+      padding: 0.6rem 1.8rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    #back-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    @media (max-width: 500px) {
+      .letter-paper { padding: 2.5rem 2rem 2.5rem 2.8rem; }
+      .letter-paper::after { left: 2rem; }
+      .envelope-body { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN ── -->
+  <div class="screen" id="login-screen">
+    <div class="envelope-wrap">
+      <div class="envelope">
+        <div class="seal">✦</div>
+        <div class="envelope-body">
+          <h1 class="envelope-title">I left something<br>here for you.</h1>
+          <p class="envelope-sub">Enter your password to open</p>
+          <div class="input-row">
+            <input type="password" id="pwd-input" placeholder="your password…" autocomplete="off" />
+            <button id="open-btn" onclick="unlock()">Open</button>
+          </div>
+          <p id="error-msg">That password doesn't seem right — try again.</p>
+          <p class="hint">You'll know yours when you see it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LETTER ── -->
+  <div class="screen" id="letter-screen">
+    <div>
+      <div class="letter-paper">
+        <p class="letter-date" id="letter-date"></p>
+        <p id="letter-greeting"></p>
+        <p id="letter-body"></p>
+        <p class="letter-sign" id="letter-sign"></p>
+      </div>
+      <button id="back-btn" onclick="goBack()">← Close letter</button>
+    </div>
+  </div>
+
+  <script>
+    // ── YOUR LETTERS ──────────────────────────────────────────────
+    // Add one entry per friend.
+    // "password" is what they type (case-insensitive).
+    // "greeting" is the salutation line.
+    // "body" is the main letter text — use \n\n for new paragraphs.
+    // "sign" is your sign-off.
+    const letters = {
+      "sunflower": {
+        greeting: "Dear Priya,",
+        body: `Some people come into your life quietly, and then you can't imagine it without them. You're one of those people for me.\n\nI'm going to miss our late-night library sessions, complaining about the heating, and the way you always somehow had the right thing to say.\n\nI'm only gone for a year — but I know you're going to do something brilliant in that time. Please send me the highlights.`,
+        sign: "With so much love, always."
+      },
+      "biscuit42": {
+        greeting: "Dear Tom,",
+        body: `You've been the best flatmate anyone could ask for, which is frankly quite annoying because now the bar is set impossibly high.\n\nThank you for every terrible film night, every shared meal, every time you pretended not to notice when I was having a bad week. You noticed. It mattered.\n\nLook after yourself this year. I'll be back before you have time to miss me.`,
+        sign: "Your ever-grateful co-inhabitant."
+      },
+      "morningstar": {
+        greeting: "To my dearest Jess,",
+        body: `I started writing this three times and deleted it three times, because how do you put three years of friendship into a page?\n\nYou make every room better. You make hard things feel survivable. You are, honestly, one of the best humans I have ever met.\n\nA year is not so long. And when I'm back, we are going for that dinner we've been planning since second year.`,
+        sign: "Yours, with gratitude and ridiculous amounts of affection."
+      }
+    };
+    // ─────────────────────────────────────────────────────────────
+
+    // Set today's date on the letter
+    document.getElementById('letter-date').textContent = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    // Also allow Enter key to submit
+    document.getElementById('pwd-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') unlock();
+    });
+
+    function unlock() {
+      const input = document.getElementById('pwd-input').value.trim().toLowerCase();
+      const letter = letters[input];
+      const errMsg = document.getElementById('error-msg');
+
+      if (letter) {
+        errMsg.classList.remove('visible');
+        document.getElementById('letter-greeting').textContent = letter.greeting;
+        document.getElementById('letter-body').textContent    = letter.body;
+        document.getElementById('letter-sign').textContent    = letter.sign;
+
+        document.getElementById('login-screen').style.display = 'none';
+        const ls = document.getElementById('letter-screen');
+        ls.style.display = 'flex';
+        // re-trigger animation
+        ls.style.animation = 'none';
+        ls.offsetHeight; // reflow
+        ls.style.animation = '';
+      } else {
+        errMsg.classList.remove('visible');
+        void errMsg.offsetWidth; // reflow to restart transition
+        errMsg.classList.add('visible');
+        document.getElementById('pwd-input').select();
+      }
+    }
+
+    function goBack() {
+      document.getElementById('letter-screen').style.display = 'none';
+      document.getElementById('login-screen').style.display  = 'flex';
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('error-msg').classList.remove('visible');
+    }
+  </script>
+</body>
+</html>
